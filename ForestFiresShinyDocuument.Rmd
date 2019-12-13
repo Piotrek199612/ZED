@@ -1,0 +1,140 @@
+---
+title: "FrestFires"
+author: "Piotr Stürmer, Konrad Szymański"
+date: "13 12 2019"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+```
+
+```{r echo=FALSE}
+fires <- read.csv(file='forestfires.csv')
+```
+
+## Univariate analysis
+
+### FFMC
+The Fine Fuel Moisture Code (FFMC) is a numeric rating of the moisture content of litter and other cured fine fuels. This code is an indicator of the relative ease of ignition and the flammability of fine fuel.
+
+```{r echo=FALSE}
+fluidRow(
+  column(6, renderPlot(ggplot(fires, aes(FFMC)) + geom_density(alpha=0.5, fill="green"))),
+  column(6, renderPlot(boxplot(fires$FFMC, col="lightblue")))
+)
+```
+
+### DMC
+The Duff Moisture Code (DMC) is a numeric rating of the average moisture content of loosely compacted organic layers of moderate depth. This code gives an indication of fuel consumption in moderate duff layers and medium-size woody material. 
+
+```{r echo=FALSE}
+fluidRow(
+  column(6, renderPlot(ggplot(fires, aes(DMC)) + geom_density(alpha=0.5, fill="green"))),
+  column(6, renderPlot(boxplot(fires$DMC, col="lightblue")))
+)
+```
+
+### DC
+The Drought Code (DC) is a numeric rating of the average moisture content of deep, compact organic layers. This code is a useful indicator of seasonal drought effects on forest fuels and the amount of smoldering in deep duff layers and large logs.
+
+```{r echo=FALSE}
+fluidRow(
+  column(6, renderPlot(ggplot(fires, aes(DC)) + geom_density(alpha=0.5, fill="green"))),
+  column(6, renderPlot(boxplot(fires$DC, col="lightblue")))
+)
+```
+
+### ISI
+The Initial Spread Index (ISI) is a numeric rating of the expected rate of fire spread. It combines the effects of wind and the FFMC on rate of spread without the influence of variable quantities of fuel.
+```{r echo=FALSE}
+fluidRow(
+  column(6, renderPlot(ggplot(fires, aes(ISI)) + geom_density(alpha=0.5, fill="green"))),
+  column(6, renderPlot(boxplot(fires$ISI, col="lightblue")))
+)
+```
+
+### RH
+Relative humidity in %
+```{r echo=FALSE}
+fluidRow(
+  column(6, renderPlot(ggplot(fires, aes(RH)) + geom_density(alpha=0.5, fill="green"))),
+  column(6, renderPlot(boxplot(fires$RH, col="lightblue")))
+)
+```
+
+### temp
+Temperature in Celsius degrees
+```{r echo=FALSE}
+fluidRow(
+  column(6, renderPlot(ggplot(fires, aes(temp)) + geom_density(alpha=0.5, fill="green"))),
+  column(6, renderPlot(boxplot(fires$temp, col="lightblue")))
+)
+```
+
+```{r echo=FALSE}
+ggplot(fires) + geom_bar(aes(x= reorder(month, temp), temp, fill = month), position = "dodge", stat = "summary", fun.y = "mean")
+```
+
+As expected, summer months are the warmest and winter the coldest
+
+### wind
+Wind speed in km/h
+```{r echo=FALSE}
+fluidRow(
+  column(6, renderPlot(ggplot(fires, aes(wind)) + geom_density(alpha=0.5, fill="green"))),
+  column(6, renderPlot(boxplot(fires$wind, col="lightblue")))
+)
+```
+
+### rain
+Outside rain in mm/m2
+```{r echo=FALSE}
+fluidRow(
+  column(6, renderPlot(ggplot(fires, aes(rain)) + geom_density(alpha=0.5, fill="green"))),
+  column(6, renderPlot(boxplot(fires$rain, col="lightblue")))
+)
+```
+
+```{r echo=FALSE}
+inputPanel( selectInput("rain_summary_method", "Choose a aggegation methon:", list('method'=c("mean", "sum"))))
+
+renderPlot({
+  ggplot(fires) + geom_bar(aes(x= reorder(month, rain), rain, fill = month), position = "dodge", stat = "summary", fun.y = input$rain_summary_method)
+})
+```
+The graph shows that it rained only three months a year in the park
+
+### Burned area summary
+```{r echo=FALSE, warning=FALSE}
+fluidRow(
+  column(6, renderPlot(ggplot(fires, aes(area)) + geom_density(alpha=0.5, fill="green"))),
+  column(6, renderPlot(boxplot(fires$area, col="lightblue")))
+)
+areas <- fires %>% select(X, Y, area) %>% group_by(X, Y) %>% summarize(sum_area = sum(area))
+ggplot(areas, aes(X, -Y)) + geom_raster(aes(fill = sum_area)) + scale_x_continuous(breaks=seq(0,10,1)) + scale_y_continuous(breaks=seq(1,10,1))
+```
+![The map of the Montesinho natural park](parkMap.png)
+
+### Fires each month
+#### Number of fires each month
+```{r echo=FALSE}
+ggplot(fires, aes(x = reorder(month, fires$month==month, sum), y = (..count..)/sum(..count..), fill=month)) + geom_bar(stat = "count")  + labs(x='month', y='% of total number of fires')
+```
+
+As we can see almost 70% of all fires took place in september and august
+
+#### Mean area burned during fire each month
+```{r echo=FALSE}
+ggplot(fires) + geom_bar(aes(x= reorder(month, area), area, fill = month), position = "dodge", stat = "summary", fun.y = "mean")
+
+inputPanel( selectInput("area_summary_method", "Choose a aggegation methon:", list('method'=c("mean", "sum"))))
+renderPlot({
+  ggplot(fires) + geom_bar(aes(x= reorder(month, area), area, fill = month), position = "dodge", stat = "summary", fun.y = input$area_summary_method)
+})
+```
+
+We see that on average the largest fires took place in May, but there were few of them and they were relatively large
