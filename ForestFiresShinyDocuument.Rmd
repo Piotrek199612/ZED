@@ -1,5 +1,5 @@
 ---
-title: "FrestFires"
+title: "Forest Fires"
 author: "Piotr Stürmer, Konrad Szymański"
 date: "13 12 2019"
 output: html_document
@@ -79,7 +79,7 @@ fluidRow(
 ggplot(fires) + geom_bar(aes(x= reorder(month, temp), temp, fill = month), position = "dodge", stat = "summary", fun.y = "mean")
 ```
 
-As expected, summer months are the warmest and winter the coldest
+As expected, summer months are the warmest and winter the coldest.
 
 ### wind
 Wind speed in km/h
@@ -106,7 +106,7 @@ renderPlot({
   ggplot(fires) + geom_bar(aes(x= reorder(month, rain), rain, fill = month), position = "dodge", stat = "summary", fun.y = input$rain_summary_method)
 })
 ```
-The graph shows that it rained only three months a year in the park
+The graph shows that it rained only three months a year in the park. Most of the rain fell in August.
 
 ### Burned area summary
 ```{r echo=FALSE, warning=FALSE}
@@ -125,9 +125,9 @@ ggplot(areas, aes(X, -Y)) + geom_raster(aes(fill = sum_area)) + scale_x_continuo
 ggplot(fires, aes(x = reorder(month, fires$month==month, sum), y = (..count..)/sum(..count..), fill=month)) + geom_bar(stat = "count")  + labs(x='month', y='% of total number of fires')
 ```
 
-As we can see almost 70% of all fires took place in september and august
+As we can see almost 70% of all fires took place in September and August.
 
-#### Mean area burned during fire each month
+#### Mean area burned during fire each month:
 ```{r echo=FALSE}
 ggplot(fires) + geom_bar(aes(x= reorder(month, area), area, fill = month), position = "dodge", stat = "summary", fun.y = "mean")
 
@@ -137,4 +137,38 @@ renderPlot({
 })
 ```
 
-We see that on average the largest fires took place in May, but there were few of them and they were relatively large
+We see that on average the largest fires took place in May, but there were few of them and they were relatively large.
+
+### Relationship between weather conditions and fire area size
+
+```{r echo=FALSE}
+ggplot(fires, aes(x=temp, y=area)) + 
+  geom_smooth(method="lm") +
+  labs(title="Temperature & Area")
+```
+
+```{r echo=FALSE}
+ggplot(fires, aes(x=RH, y=area)) + 
+  geom_smooth(method="lm") +
+  labs(title="Humidity & Area")
+```
+
+```{r echo=FALSE}
+ggplot(fires, aes(x=temp, y=RH)) + 
+  geom_smooth(method="lm") +
+  labs(title="Temperature & Humidity")
+```
+
+Looking at three charts above we can see that everything looks very reasonable. There is clear dependency between temperature and area. The higher temperature is, the bigger fires are. It cannot be denied that fire area also decreases when humidity becomes higher. Third chart only confirms our data correctness. When temperature rises, humidity decreases - so fires area rises.
+
+
+```{r echo=FALSE}
+ggplot(fires, aes(x=wind, y=area)) + 
+  geom_point() + 
+  geom_smooth(method="lm") +
+  labs(title="Wind & Area")
+```
+
+There is no doubt that above chart in real world would be really surprising. It looks like there is very little dependency between wind and fire area in this forest. Considering our data about wind and wind chart we saw before it must be admitted that wind doesn't really change in this forest, so it's impact is minimal.
+
+
