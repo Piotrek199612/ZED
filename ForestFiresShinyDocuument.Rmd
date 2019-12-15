@@ -144,12 +144,14 @@ We see that on average the largest fires took place in May, but there were few o
 ```{r echo=FALSE}
 ggplot(fires, aes(x=temp, y=area)) + 
   geom_smooth(method="lm") +
+  coord_cartesian(ylim=c(0, 40)) +
   labs(title="Temperature & Area")
 ```
 
 ```{r echo=FALSE}
 ggplot(fires, aes(x=RH, y=area)) + 
   geom_smooth(method="lm") +
+  coord_cartesian(ylim=c(0, 40)) +
   labs(title="Humidity & Area")
 ```
 
