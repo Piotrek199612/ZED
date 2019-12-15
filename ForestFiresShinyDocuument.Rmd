@@ -21,12 +21,25 @@ fires <- read.csv(file='forestfires.csv')
 ### FFMC
 The Fine Fuel Moisture Code (FFMC) is a numeric rating of the moisture content of litter and other cured fine fuels. This code is an indicator of the relative ease of ignition and the flammability of fine fuel.
 
+#### Raw data
 ```{r echo=FALSE}
 fluidRow(
   column(6, renderPlot(ggplot(fires, aes(FFMC)) + geom_density(alpha=0.5, fill="green"))),
   column(6, renderPlot(boxplot(fires$FFMC, col="lightblue")))
 )
 ```
+
+#### After removing outliers
+```{r echo=FALSE}
+out <- boxplot(fires$FFMC, plot=FALSE)$out
+fires_without <- fires[-which(fires$FFMC %in% out),]
+
+fluidRow(
+  column(6, renderPlot(ggplot(fires_without, aes(FFMC)) + geom_density(alpha=0.5, fill="green"))),
+  column(6, renderPlot(boxplot(fires_without$FFMC, col="lightblue")))
+)
+```
+
 
 ### DMC
 The Duff Moisture Code (DMC) is a numeric rating of the average moisture content of loosely compacted organic layers of moderate depth. This code gives an indication of fuel consumption in moderate duff layers and medium-size woody material. 
@@ -75,6 +88,8 @@ fluidRow(
 )
 ```
 
+Distribution of temperature is very close to normal distribution with a mean of 20
+
 ```{r echo=FALSE}
 ggplot(fires) + geom_bar(aes(x= reorder(month, temp), temp, fill = month), position = "dodge", stat = "summary", fun.y = "mean")
 ```
@@ -97,6 +112,12 @@ fluidRow(
   column(6, renderPlot(ggplot(fires, aes(rain)) + geom_density(alpha=0.5, fill="green"))),
   column(6, renderPlot(boxplot(fires$rain, col="lightblue")))
 )
+```
+
+Measures different than 0
+```{r echo=FALSE}
+fires_with_rain <- fires[-which(fires$rain == 0),]
+fires_with_rain
 ```
 
 ```{r echo=FALSE}
